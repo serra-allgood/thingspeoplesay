@@ -1,2 +1,7 @@
 /target
 **/*.rs.bk
+Migrant.toml
+.env
+key.pem
+cert.pem
+logFile

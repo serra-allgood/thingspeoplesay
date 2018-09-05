@@ -1,6 +1,13 @@
 [package]
 name = "thingspeoplesay"
 version = "0.1.0"
-authors = ["Serra Allgood <corwin.rebma@gmail.com>"]
+authors = ["Serra Allgood <serra.allgood@gmail.com>"]
 
 [dependencies]
+actix = "0.7"
+actix-web = { version = "0.7", features = ["alpn"] }
+diesel = { version = "1.0.0", features = ["postgres"] }
+dotenv = "0.13"
+listenfd = "0.3"
+openssl = "0.10"
+
