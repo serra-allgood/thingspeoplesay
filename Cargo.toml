@@ -8,6 +8,7 @@ actix = "0.7"
 actix-web = { version = "0.7", features = ["alpn"] }
 diesel = { version = "1.0.0", features = ["postgres"] }
 dotenv = "0.13"
+env_logger = "0.5"
 futures = "0.1"
 openssl = "0.10"
 serde = "1.0"

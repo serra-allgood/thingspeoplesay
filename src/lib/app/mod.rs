@@ -5,7 +5,7 @@ extern crate futures;
 
 use self::actix::{Addr, SyncArbiter};
 use self::futures::Future;
-use super::orm::db_messages::CreateThing;
+use super::orm::db_messages::*;
 use actix_web::{
     http, middleware, ws, App, AsyncResponder, FutureResponse, HttpResponse, Json, State,
 };
@@ -20,15 +20,27 @@ pub struct AppState {
     db: Addr<orm::db_exec::DbExec>,
 }
 
-fn create_thing(
-    (state, json): (State<AppState>, Json<CreateThing>),
+fn create_speech(
+    (state, json): (State<AppState>, Json<CreateSpeech>),
 ) -> FutureResponse<HttpResponse> {
     state
         .db
         .send(json.into_inner())
         .from_err()
         .and_then(|res| match res {
-            Ok(gradients) => Ok(HttpResponse::Ok().json(gradients)),
+            Ok(speech) => Ok(HttpResponse::Ok().json(speech)),
+            Err(_) => Ok(HttpResponse::InternalServerError().into()),
+        })
+        .responder()
+}
+
+fn get_speeches(state: State<AppState>) -> FutureResponse<HttpResponse> {
+    state
+        .db
+        .send(GetSpeeches {})
+        .from_err()
+        .and_then(|res| match res {
+            Ok(speeches) => Ok(HttpResponse::Ok().json(speeches)),
             Err(_) => Ok(HttpResponse::InternalServerError().into()),
         })
         .responder()
@@ -52,8 +64,8 @@ pub fn setup_app() -> App<AppState> {
             middleware::cors::Cors::for_app(app)
                 .allowed_origin(origin)
                 .resource("/things", |r| {
-                    r.method(http::Method::GET).f(|_| HttpResponse::Ok());
-                    r.method(http::Method::POST).with(create_thing);
+                    r.method(http::Method::GET).with(get_speeches);
+                    r.method(http::Method::POST).with(create_speech);
                 })
                 .register()
         })

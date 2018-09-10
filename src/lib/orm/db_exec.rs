@@ -4,10 +4,10 @@ extern crate diesel;
 
 use self::actix::prelude::*;
 use self::actix_web::error;
-use self::diesel::dsl::{exists, select};
+use self::diesel::dsl::{exists, select, sql_query};
 use self::diesel::pg::PgConnection;
 use self::diesel::prelude::*;
-use super::db_messages::CreateThing;
+use super::db_messages::*;
 use super::models;
 
 pub struct DbExec(pub PgConnection);
@@ -16,16 +16,16 @@ impl Actor for DbExec {
     type Context = SyncContext<Self>;
 }
 
-impl Handler<CreateThing> for DbExec {
-    type Result = Result<Vec<models::Gradient>, error::Error>;
+impl Handler<CreateSpeech> for DbExec {
+    type Result = Result<models::Speech, error::Error>;
 
-    fn handle(&mut self, msg: CreateThing, _: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: CreateSpeech, _: &mut Self::Context) -> Self::Result {
         use lib::schema::colors::dsl::*;
         use lib::schema::gradients;
         use lib::schema::messages;
 
         let new_message = models::NewMessage {
-            message: &msg.message,
+            message: msg.message.as_str(),
         };
 
         let m = match diesel::insert_into(messages::table)
@@ -42,7 +42,7 @@ impl Handler<CreateThing> for DbExec {
         };
 
         let mut cs: Vec<models::Color> = Vec::new();
-        for hex in msg.hexcodes {
+        for hex in msg.hexcodes.iter() {
             match select(exists(colors.filter(hexcode.eq(&hex)))).get_result::<bool>(&self.0) {
                 Ok(true) => {
                     match colors
@@ -78,18 +78,17 @@ impl Handler<CreateThing> for DbExec {
             };
         }
 
-        let mut gs: Vec<models::Gradient> = Vec::new();
         for (i, color) in cs.iter().enumerate() {
             let new_gradient = models::NewGradient {
                 message_id: m.id,
                 color_id: color.id,
                 position: i as i32,
             };
-            let g = match diesel::insert_into(gradients::table)
+            match diesel::insert_into(gradients::table)
                 .values(&new_gradient)
-                .get_result::<models::Gradient>(&self.0)
+                .execute(&self.0)
             {
-                Ok(result) => result,
+                Ok(_) => (),
                 Err(_) => {
                     return Err(error::ErrorInternalServerError(format!(
                         "Failed to create gradient: message_id: {}, color_id: {}",
@@ -97,9 +96,31 @@ impl Handler<CreateThing> for DbExec {
                     )))
                 }
             };
-            gs.push(g);
         }
 
-        Ok(gs)
+        let thing = models::Speech {
+            message: msg.message.clone(),
+            hexcodes: msg.hexcodes,
+        };
+
+        Ok(thing)
+    }
+}
+
+impl Handler<GetSpeeches> for DbExec {
+    type Result = Result<Vec<models::Speech>, error::Error>;
+
+    fn handle(&mut self, _: GetSpeeches, _: &mut Self::Context) -> Self::Result {
+        match sql_query(
+            "SELECT messages.id, messages.message, array_agg(colors.hexcode) AS hexcodes
+            FROM messages
+            INNER JOIN gradients ON gradients.message_id = messages.id
+            INNER JOIN colors ON colors.id = gradients.color_id
+            GROUP BY messages.id",
+        ).load::<models::Speech>(&self.0)
+        {
+            Ok(results) => Ok(results),
+            Err(_) => Err(error::ErrorInternalServerError("Failed to fetch speeches")),
+        }
     }
 }

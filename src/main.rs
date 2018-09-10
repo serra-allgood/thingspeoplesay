@@ -3,6 +3,7 @@ extern crate actix_web;
 #[macro_use]
 extern crate diesel;
 extern crate dotenv;
+extern crate env_logger;
 extern crate openssl;
 #[macro_use]
 extern crate serde_derive;
@@ -17,6 +18,8 @@ mod lib;
 
 fn main() {
     dotenv().ok();
+    env::set_var("RUST_LOG", "actix_web=info");
+    env_logger::init();
 
     let sys = System::new("thingspeoplesay");
 
