@@ -1,3 +1,3 @@
-pub mod schema;
-pub mod orm;
 pub mod app;
+pub mod orm;
+pub mod schema;

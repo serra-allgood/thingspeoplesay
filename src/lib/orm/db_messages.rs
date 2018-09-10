@@ -5,11 +5,12 @@ use self::actix::Message;
 use self::actix_web::error::Error;
 use super::models::Gradient;
 
-pub struct CreateBackground {
+#[derive(Deserialize)]
+pub struct CreateThing {
     pub message: String,
-    pub hexcodes: Vec<String>
+    pub hexcodes: Vec<String>,
 }
 
-impl Message for CreateBackground {
+impl Message for CreateThing {
     type Result = Result<Vec<Gradient>, Error>;
 }

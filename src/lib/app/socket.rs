@@ -3,12 +3,12 @@ extern crate actix_web;
 
 use self::actix::{Actor, StreamHandler};
 use self::actix_web::ws;
-use super::State;
+use super::AppState;
 
 pub struct Socket;
 
 impl Actor for Socket {
-    type Context = ws::WebsocketContext<Self, State>;
+    type Context = ws::WebsocketContext<Self, AppState>;
 }
 
 impl StreamHandler<ws::Message, ws::ProtocolError> for Socket {
