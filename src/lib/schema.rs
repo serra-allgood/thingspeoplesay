@@ -18,6 +18,7 @@ table! {
     messages (id) {
         id -> Int8,
         message -> Text,
+        created_at -> Timestamp,
     }
 }
 

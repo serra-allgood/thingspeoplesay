@@ -110,14 +110,17 @@ impl Handler<CreateSpeech> for DbExec {
 impl Handler<GetSpeeches> for DbExec {
     type Result = Result<Vec<models::Speech>, error::Error>;
 
-    fn handle(&mut self, _: GetSpeeches, _: &mut Self::Context) -> Self::Result {
-        match sql_query(
+    fn handle(&mut self, msg: GetSpeeches, _: &mut Self::Context) -> Self::Result {
+        match sql_query(format!(
             "SELECT messages.id, messages.message, array_agg(colors.hexcode) AS hexcodes
             FROM messages
             INNER JOIN gradients ON gradients.message_id = messages.id
             INNER JOIN colors ON colors.id = gradients.color_id
-            GROUP BY messages.id",
-        ).load::<models::Speech>(&self.0)
+            WHERE messages.created_at BETWEEN to_date('{}', 'YYYY-MM-DD') AND to_date('{}', 'YYYY-MM-DD')
+            GROUP BY messages.id
+            ORDER BY messages.created_at DESC",
+            &msg.start_date, &msg.end_date,
+        )).load::<models::Speech>(&self.0)
         {
             Ok(results) => Ok(results),
             Err(_) => Err(error::ErrorInternalServerError("Failed to fetch speeches")),

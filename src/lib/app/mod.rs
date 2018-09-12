@@ -5,14 +5,12 @@ extern crate futures;
 
 use self::actix::{Addr, SyncArbiter};
 use self::futures::Future;
-use super::orm::db_messages::*;
+use super::orm::{self, db_messages::*};
 use actix_web::{
-    http, middleware, ws, App, AsyncResponder, FutureResponse, HttpResponse, Json, State,
+    http, middleware, ws, App, AsyncResponder, FutureResponse, HttpResponse, Json, Query, State,
 };
 use dotenv::dotenv;
 use std::env;
-
-use super::orm;
 
 mod socket;
 
@@ -29,19 +27,21 @@ fn create_speech(
         .from_err()
         .and_then(|res| match res {
             Ok(speech) => Ok(HttpResponse::Ok().json(speech)),
-            Err(_) => Ok(HttpResponse::InternalServerError().into()),
+            Err(err) => Ok(HttpResponse::from_error(err)),
         })
         .responder()
 }
 
-fn get_speeches(state: State<AppState>) -> FutureResponse<HttpResponse> {
+fn get_speeches(
+    (state, query): (State<AppState>, Query<GetSpeeches>),
+) -> FutureResponse<HttpResponse> {
     state
         .db
-        .send(GetSpeeches {})
+        .send(query.into_inner())
         .from_err()
         .and_then(|res| match res {
             Ok(speeches) => Ok(HttpResponse::Ok().json(speeches)),
-            Err(_) => Ok(HttpResponse::InternalServerError().into()),
+            Err(err) => Ok(HttpResponse::from_error(err)),
         })
         .responder()
 }

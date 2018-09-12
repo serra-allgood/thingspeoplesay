@@ -1,10 +1,12 @@
 use super::super::schema::*;
 use diesel::sql_types::{Array, Text, VarChar};
+use std::time::SystemTime;
 
 #[derive(Queryable)]
 pub struct Message {
     pub id: i64,
     pub message: String,
+    pub created_at: SystemTime,
 }
 
 #[derive(Insertable)]
@@ -23,14 +25,6 @@ pub struct Color {
 #[table_name = "colors"]
 pub struct NewColor<'a> {
     pub hexcode: &'a str,
-}
-
-#[derive(Queryable)]
-pub struct Gradient {
-    pub id: i64,
-    pub message_id: i64,
-    pub color_id: i64,
-    pub position: i32,
 }
 
 #[derive(Insertable)]
