@@ -1,8 +1,4 @@
-extern crate diesel;
-extern crate dotenv;
-
-use self::diesel::pg::PgConnection;
-use self::diesel::prelude::*;
+use diesel::{pg::PgConnection, prelude::*};
 use dotenv::dotenv;
 use std::env;
 

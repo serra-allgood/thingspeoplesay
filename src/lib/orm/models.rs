@@ -1,5 +1,5 @@
-use super::super::schema::*;
 use diesel::sql_types::{Array, Text, VarChar};
+use lib::schema::*;
 use std::time::SystemTime;
 
 #[derive(Queryable)]

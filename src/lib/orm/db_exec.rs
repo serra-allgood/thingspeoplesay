@@ -1,14 +1,14 @@
-extern crate actix;
-extern crate actix_web;
 extern crate diesel;
 
-use self::actix::prelude::*;
-use self::actix_web::error;
-use self::diesel::dsl::{exists, select, sql_query};
-use self::diesel::pg::PgConnection;
-use self::diesel::prelude::*;
 use super::db_messages::*;
 use super::models;
+use actix::prelude::*;
+use actix_web::error;
+use diesel::{
+    dsl::{exists, select, sql_query},
+    pg::PgConnection,
+    prelude::*,
+};
 
 pub struct DbExec(pub PgConnection);
 

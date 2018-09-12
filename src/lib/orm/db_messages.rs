@@ -1,9 +1,6 @@
-extern crate actix;
-extern crate actix_web;
-
-use self::actix::Message;
-use self::actix_web::error::Error;
 use super::models::Speech;
+use actix::Message;
+use actix_web::error::Error;
 
 #[derive(Deserialize)]
 pub struct CreateSpeech {

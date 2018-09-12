@@ -1,9 +1,6 @@
-extern crate actix;
-extern crate actix_web;
-
-use self::actix::{Actor, StreamHandler};
-use self::actix_web::ws;
 use super::AppState;
+use actix::{Actor, StreamHandler};
+use actix_web::ws;
 use lib::colors::text_to_colors;
 
 pub struct Socket;
