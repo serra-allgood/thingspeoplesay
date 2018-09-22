@@ -14,8 +14,7 @@ impl Message for CreateSpeech {
 
 #[derive(Deserialize)]
 pub struct GetSpeeches {
-    pub start_date: String,
-    pub end_date: String,
+    pub page: i32,
 }
 
 impl Message for GetSpeeches {

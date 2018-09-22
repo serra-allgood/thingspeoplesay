@@ -112,14 +112,21 @@ impl Handler<GetSpeeches> for DbExec {
 
     fn handle(&mut self, msg: GetSpeeches, _: &mut Self::Context) -> Self::Result {
         match sql_query(format!(
-            "SELECT messages.id, messages.message, array_agg(colors.hexcode) AS hexcodes
-            FROM messages
-            INNER JOIN gradients ON gradients.message_id = messages.id
-            INNER JOIN colors ON colors.id = gradients.color_id
-            WHERE messages.created_at BETWEEN to_date('{}', 'YYYY-MM-DD') AND to_date('{}', 'YYYY-MM-DD')
-            GROUP BY messages.id
-            ORDER BY messages.created_at DESC",
-            &msg.start_date, &msg.end_date,
+            "SELECT id, message, hexcodes, num
+            FROM (
+                SELECT
+                    messages.id,
+                    messages.message,
+                    array_agg(colors.hexcode) AS hexcodes,
+                    row_number() OVER (ORDER BY messages.created_at DESC) AS num
+                FROM messages
+                INNER JOIN gradients ON gradients.message_id = messages.id
+                INNER JOIN colors ON colors.id = gradients.color_id
+                GROUP BY messages.id
+            ) AS messages
+            WHERE num BETWEEN {} AND {}",
+            (msg.page - 1) * 200,
+            (msg.page - 1) * 200 + 200
         )).load::<models::Speech>(&self.0)
         {
             Ok(results) => Ok(results),

@@ -36,7 +36,7 @@ fn main() {
 
         server.bind_ssl("localhost:443", builder).unwrap()
     } else {
-        server.bind("localhost:3000").unwrap()
+        server.bind("localhost:8080").unwrap()
     };
 
     server.start();
