@@ -1,5 +1,10 @@
-use diesel::sql_types::{Array, Text, VarChar};
+use diesel::{
+    deserialize::{FromSql, Result},
+    pg::Pg,
+    sql_types::{Array, Bigint, Jsonb, Text, VarChar},
+};
 use lib::schema::*;
+use serde_json;
 use std::time::SystemTime;
 
 #[derive(Queryable)]
@@ -35,10 +40,30 @@ pub struct NewGradient {
     pub position: i32,
 }
 
-#[derive(Deserialize, Serialize, QueryableByName)]
+#[derive(Deserialize, Serialize, QueryableByName, FromSqlRow)]
 pub struct Speech {
     #[sql_type = "Text"]
     pub message: String,
     #[sql_type = "Array<VarChar>"]
     pub hexcodes: Vec<String>,
+}
+
+impl FromSql<Jsonb, Pg> for Speech {
+    fn from_sql(bytes: Option<&[u8]>) -> Result<Self> {
+        let bytes = not_none!(bytes);
+        if bytes[0] != 1 {
+            return Err("Unsupported JSONB encoding version".into());
+        }
+        let speech: Speech = serde_json::from_slice(&bytes[1..])?;
+
+        Ok(speech)
+    }
+}
+
+#[derive(Deserialize, Serialize, QueryableByName)]
+pub struct SpeechData {
+    #[sql_type = "Bigint"]
+    pub total: i64,
+    #[sql_type = "Array<Jsonb>"]
+    pub speeches: Vec<Speech>,
 }

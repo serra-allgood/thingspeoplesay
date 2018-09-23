@@ -7,6 +7,7 @@ extern crate env_logger;
 extern crate openssl;
 #[macro_use]
 extern crate serde_derive;
+extern crate serde_json;
 
 use actix::System;
 use actix_web::server;

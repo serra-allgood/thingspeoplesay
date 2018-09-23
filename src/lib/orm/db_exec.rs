@@ -108,14 +108,13 @@ impl Handler<CreateSpeech> for DbExec {
 }
 
 impl Handler<GetSpeeches> for DbExec {
-    type Result = Result<Vec<models::Speech>, error::Error>;
+    type Result = Result<models::SpeechData, error::Error>;
 
     fn handle(&mut self, msg: GetSpeeches, _: &mut Self::Context) -> Self::Result {
         match sql_query(format!(
-            "SELECT id, message, hexcodes, num
+            "SELECT max(num) AS total, array_agg(jsonb_build_object('message', message, 'hexcodes', hexcodes)) AS speeches
             FROM (
                 SELECT
-                    messages.id,
                     messages.message,
                     array_agg(colors.hexcode) AS hexcodes,
                     row_number() OVER (ORDER BY messages.created_at DESC) AS num
@@ -127,7 +126,7 @@ impl Handler<GetSpeeches> for DbExec {
             WHERE num BETWEEN {} AND {}",
             (msg.page - 1) * 200,
             (msg.page - 1) * 200 + 200
-        )).load::<models::Speech>(&self.0)
+        )).get_result::<models::SpeechData>(&self.0)
         {
             Ok(results) => Ok(results),
             Err(_) => Err(error::ErrorInternalServerError("Failed to fetch speeches")),

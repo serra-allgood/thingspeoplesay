@@ -1,4 +1,4 @@
-use super::models::Speech;
+use super::models::{Speech, SpeechData};
 use actix::Message;
 use actix_web::error::Error;
 
@@ -18,5 +18,5 @@ pub struct GetSpeeches {
 }
 
 impl Message for GetSpeeches {
-    type Result = Result<Vec<Speech>, Error>;
+    type Result = Result<SpeechData, Error>;
 }
