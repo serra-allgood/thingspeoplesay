@@ -29,13 +29,7 @@ fn main() {
     let rust_env = env::var("RUST_ENV").unwrap_or_else(|_| String::from("development"));
 
     server = if rust_env == "production" {
-        let mut builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
-        builder
-            .set_private_key_file("key.pem", SslFiletype::PEM)
-            .unwrap();
-        builder.set_certificate_chain_file("cert.pem").unwrap();
-
-        server.bind_ssl("localhost:443", builder).unwrap()
+        server.bind("0.0.0.0:80").unwrap()
     } else {
         server.bind("localhost:8080").unwrap()
     };
