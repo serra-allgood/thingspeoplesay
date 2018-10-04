@@ -5,3 +5,6 @@ Migrant.toml
 key.pem
 cert.pem
 logFile
+terraform.tfvars
+.terraform
+Dockerfile
