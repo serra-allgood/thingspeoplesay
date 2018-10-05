@@ -33,10 +33,10 @@ impl Handler<CreateSpeech> for DbExec {
             .get_result::<models::Message>(&self.0)
         {
             Ok(result) => result,
-            Err(_) => {
+            Err(err) => {
                 return Err(error::ErrorInternalServerError(format!(
-                    "Failed to create message: {}",
-                    new_message.message
+                    "Failed to create message: {}, error: {:?}",
+                    new_message.message, err
                 )))
             }
         };
@@ -50,10 +50,10 @@ impl Handler<CreateSpeech> for DbExec {
                         .load::<models::Color>(&self.0)
                     {
                         Ok(mut results) => cs.push(results.pop().unwrap()),
-                        Err(_) => {
+                        Err(err) => {
                             return Err(error::ErrorInternalServerError(format!(
-                                "Failed to retrieve color {}",
-                                hex
+                                "Failed to retrieve color {}, error: {:?}",
+                                hex, err
                             )))
                         }
                     };
@@ -65,16 +65,21 @@ impl Handler<CreateSpeech> for DbExec {
                         .get_result::<models::Color>(&self.0)
                     {
                         Ok(result) => result,
-                        Err(_) => {
+                        Err(err) => {
                             return Err(error::ErrorInternalServerError(format!(
-                                "Failed to create color: {}",
-                                new_color.hexcode
+                                "Failed to create color: {}, error: {:?}",
+                                new_color.hexcode, err
                             )))
                         }
                     };
                     cs.push(color);
                 }
-                Err(_) => return Err(error::ErrorInternalServerError("Exists query failed")),
+                Err(err) => {
+                    return Err(error::ErrorInternalServerError(format!(
+                        "Exists query failed, error: {:?}",
+                        err
+                    )))
+                }
             };
         }
 
@@ -89,10 +94,10 @@ impl Handler<CreateSpeech> for DbExec {
                 .execute(&self.0)
             {
                 Ok(_) => (),
-                Err(_) => {
+                Err(err) => {
                     return Err(error::ErrorInternalServerError(format!(
-                        "Failed to create gradient: message_id: {}, color_id: {}",
-                        new_gradient.message_id, new_gradient.color_id
+                        "Failed to create gradient: message_id: {}, color_id: {}, error: {:?}",
+                        new_gradient.message_id, new_gradient.color_id, err
                     )))
                 }
             };
@@ -129,7 +134,7 @@ impl Handler<GetSpeeches> for DbExec {
         )).get_result::<models::SpeechData>(&self.0)
         {
             Ok(results) => Ok(results),
-            Err(_) => Err(error::ErrorInternalServerError("Failed to fetch speeches")),
+            Err(err) => Err(error::ErrorInternalServerError(format!("{:?}", err))),
         }
     }
 }

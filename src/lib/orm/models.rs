@@ -1,7 +1,7 @@
 use diesel::{
     deserialize::{FromSql, Result},
     pg::Pg,
-    sql_types::{Array, Bigint, Jsonb, Text, VarChar},
+    sql_types::{Array, Bigint, Jsonb, Nullable, Text, VarChar},
 };
 use lib::schema::*;
 use serde_json;
@@ -62,8 +62,8 @@ impl FromSql<Jsonb, Pg> for Speech {
 
 #[derive(Deserialize, Serialize, QueryableByName)]
 pub struct SpeechData {
-    #[sql_type = "Bigint"]
-    pub total: i64,
-    #[sql_type = "Array<Jsonb>"]
-    pub speeches: Vec<Speech>,
+    #[sql_type = "Nullable<Bigint>"]
+    pub total: Option<i64>,
+    #[sql_type = "Nullable<Array<Jsonb>>"]
+    pub speeches: Option<Vec<Speech>>,
 }

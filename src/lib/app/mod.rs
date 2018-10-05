@@ -1,4 +1,3 @@
-use self::http::header;
 use actix::{Addr, SyncArbiter};
 use actix_web::{http, middleware, ws, App};
 use dotenv::dotenv;
@@ -22,15 +21,13 @@ pub fn setup_app() -> App<AppState> {
     App::with_state(AppState { db: addr.clone() })
         .configure(|app| {
             let origin = if rust_env == "production" {
-                "https://www.thingspeoplesay.net"
+                "https://thingspeoplesay.net"
             } else {
                 "http://localhost:3000"
             };
 
             middleware::cors::Cors::for_app(app)
                 .allowed_origin(origin)
-                .allowed_headers(vec![header::ACCEPT, header::CONTENT_TYPE])
-                .expose_headers(vec![header::ACCESS_CONTROL_ALLOW_ORIGIN])
                 .resource("/things", |r| {
                     r.method(http::Method::GET).with(handlers::get_speeches);
                     r.method(http::Method::POST).with(handlers::create_speech);
