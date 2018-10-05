@@ -12,7 +12,6 @@ extern crate serde_json;
 use actix::System;
 use actix_web::server;
 use dotenv::dotenv;
-use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 use std::env;
 
 mod lib;
@@ -29,7 +28,11 @@ fn main() {
     let rust_env = env::var("RUST_ENV").unwrap_or_else(|_| String::from("development"));
 
     server = if rust_env == "production" {
-        server.bind("0.0.0.0:80").unwrap()
+        server
+            .bind("0.0.0.0:80")
+            .unwrap()
+            .bind("0.0.0.0:443")
+            .unwrap()
     } else {
         server.bind("localhost:8080").unwrap()
     };
